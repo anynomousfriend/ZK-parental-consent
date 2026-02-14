@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "file": "index.js",
+  "sourceRoot": "../../../../",
+  "sources": ["src/consent.compact"],
+  "names": [],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAAA;;;;;;;;;;MAYA,AAAA,aAKC;;;;;cAL4B,eAAoB;;;;;;;;;;;;;;;;;;yCAApB,eAAoB;;;;;;;;;+CAApB,eAAoB;;;OAKhD;MAOD,AAAA,mBAcC;;;;;cAXG,eAAoB;;;;;;;;;;;;;;;;;;yCAApB,eAAoB;;;;;;;;;qDAApB,eAAoB;;;OAWvB;;;;;;GAAC;EAtCF;;;;;;;;;;;;;;;;;;;;;;;;;;;IAMA;;;;;;;;;;yEAAoD;;;;;;;GAgClD;EA1BF,AAAA,gBAKC,4BAL4B,eAAoB;UAGvC,gBAAwC,GAAd,eAAa;IAC7C;;;;;;;;;;2HAAwB,gBAAc;;;;;;wEAAtB;;GACnB;EAOD,AAAA,sBAcC,4BAXG,eAAoB;UAGd,gBAAwC,GAAd,eAAa;UAGvC,eAAuD,2BAAvC;;;;;;;;;;;;;;+IAAwB,gBAAc;;;yHAAtB;WAI/B,eAAa;GACvB;;;;;;;;;;;;;;;;IAhCD;;;;;uCAAA;;;;;;;;;;;;;;;;4GAAoD;;;;;;uCAApD;;;;;;;;;;;;4GAAoD;;;;;;;;;;;;;;uCAApD;;;;;;;;;;;;;;;4GAAoD;;;;;;;;;;;;;;uCAApD;;;;;;;;;;;;;;;;;4GAAoD;;;;;;;;;KAAA;;;;;;;;;;"
+}

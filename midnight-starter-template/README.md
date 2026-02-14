@@ -61,7 +61,7 @@ compact check  # Should show latest version
 
 ```
 ├── counter-cli/         # CLI tools
-├── counter-contract/    # Smart contracts
+├── zk-consent-gateway/    # Smart contracts
 └── frontend-vite-react/ # React application
 ```
 
@@ -75,7 +75,7 @@ A zero-knowledge consent management system that allows parents to grant consent 
 - **Contract Address:** `3ff5dde935e606939c45813cf7f4e95c1b6584a5c3bfd90af2c1e3f653a88121`
 - **Network:** `undeployed` (local development)
 - **Deployed At:** `2026-02-14T09:54:31.560Z`
-- **Deployment File:** [`counter-contract/deployment-consent.json`](./counter-contract/deployment-consent.json)
+- **Deployment File:** [`zk-consent-gateway/deployment-consent.json`](./zk-consent-gateway/deployment-consent.json)
 
 **Features:**
 - Parent can grant consent by adding child's hashed ID to the ledger

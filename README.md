@@ -431,8 +431,8 @@ END
 | **Contract Address** | `3ff5dde935e606939c45813cf7f4e95c1b6584a5c3bfd90af2c1e3f653a88121` |
 | **Network** | `undeployed` (Local Development Network) |
 | **Deployed At** | 2026-02-14T09:54:31.560Z |
-| **Deployment File** | [`midnight-starter-template/counter-contract/deployment-consent.json`](./midnight-starter-template/counter-contract/deployment-consent.json) |
-| **Source Code** | [`consent.compact`](./midnight-starter-template/counter-contract/src/consent.compact) |
+| **Deployment File** | [`midnight-starter-template/zk-consent-gateway/deployment-consent.json`](./midnight-starter-template/zk-consent-gateway/deployment-consent.json) |
+| **Source Code** | [`consent.compact`](./midnight-starter-template/zk-consent-gateway/src/consent.compact) |
 
 ### Contract Circuits
 
@@ -622,7 +622,7 @@ yarn fund
 #### 5. Compile Smart Contract
 
 ```bash
-cd ../midnight-starter-template/counter-contract
+cd ../midnight-starter-template/zk-consent-gateway
 
 # Compile the consent contract
 npm run compile:consent
@@ -683,7 +683,7 @@ zk-parental-consent-gateway/
 │
 ├── midnight-starter-template/       # Main application code
 │   │
-│   ├── counter-contract/            # Smart contracts
+│   ├── zk-consent-gateway/            # Smart contracts
 │   │   ├── src/
 │   │   │   ├── consent.compact     # ZK Consent Gateway contract ⭐
 │   │   │   ├── deploy-consent.ts   # Deployment script
@@ -726,7 +726,7 @@ zk-parental-consent-gateway/
 ### Key Directories
 
 - **`midnight-local-network/`**: Docker setup for local blockchain development
-- **`counter-contract/`**: Smart contract source code and deployment scripts
+- **`zk-consent-gateway/`**: Smart contract source code and deployment scripts
 - **`counter-cli/`**: Command-line interface tools
 - **`frontend-vite-react/`**: Web application for parents and children (planned)
 - **`docs/`**: Additional documentation (planned)
