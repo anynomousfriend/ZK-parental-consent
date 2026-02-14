@@ -1,5 +1,5 @@
 {
-  "name": "@eddalabs/counter-cli",
+  "name": "@eddalabs/zk-consent-cli",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "private": true,
@@ -35,6 +35,6 @@
     "wallet-testing": "vitest run src/test/wallet.test.ts"
   },
   "dependencies": {    
-    "@eddalabs/counter-contract": "*"    
+    "@eddalabs/zk-consent-gateway": "*"    
   }
 }

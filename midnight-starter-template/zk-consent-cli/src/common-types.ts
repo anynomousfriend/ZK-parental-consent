@@ -1,4 +1,4 @@
-import { Counter, type CounterPrivateState } from '@eddalabs/counter-contract';
+import { Counter, type CounterPrivateState } from '@eddalabs/zk-consent-gateway';
 import type { MidnightProviders } from '@midnight-ntwrk/midnight-js-types';
 import type { DeployedContract, FoundContract } from '@midnight-ntwrk/midnight-js-contracts';
 import type { ImpureCircuitId } from '@midnight-ntwrk/compact-js';

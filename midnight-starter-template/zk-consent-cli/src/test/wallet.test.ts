@@ -9,7 +9,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import 'dotenv/config';
 import * as Rx from 'rxjs';
 import { TestEnvironment } from './simulators/simulator';
-import { Counter } from '@eddalabs/counter-contract';
+import { Counter } from '@eddalabs/zk-consent-gateway';
 import * as ledger from '@midnight-ntwrk/ledger-v7';
 import { ShieldedAddress, UnshieldedAddress } from '@midnight-ntwrk/wallet-sdk-address-format';
 import { tokenValue } from './utils/utils';

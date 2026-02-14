@@ -694,7 +694,7 @@ zk-parental-consent-gateway/
 │   │   ├── deployment-consent.json # Deployment metadata
 │   │   └── package.json
 │   │
-│   ├── counter-cli/                # CLI tools
+│   ├── zk-consent-cli/                # CLI tools
 │   │   ├── src/
 │   │   │   ├── cli.ts
 │   │   │   └── config.ts
@@ -727,7 +727,7 @@ zk-parental-consent-gateway/
 
 - **`midnight-local-network/`**: Docker setup for local blockchain development
 - **`zk-consent-gateway/`**: Smart contract source code and deployment scripts
-- **`counter-cli/`**: Command-line interface tools
+- **`zk-consent-cli/`**: Command-line interface tools
 - **`frontend-vite-react/`**: Web application for parents and children (planned)
 - **`docs/`**: Additional documentation (planned)
 

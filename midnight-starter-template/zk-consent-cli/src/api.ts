@@ -11,7 +11,7 @@ import {
   type DeployedCounterContract,
 } from './common-types';
 import { type Config, contractConfig } from './config';
-import { Counter, type CounterPrivateState } from '@eddalabs/counter-contract';
+import { Counter, type CounterPrivateState } from '@eddalabs/zk-consent-gateway';
 import { type ContractAddress } from '@midnight-ntwrk/compact-runtime';
 import * as ledger from '@midnight-ntwrk/ledger-v7';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
