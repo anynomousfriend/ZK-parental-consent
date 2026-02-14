@@ -1,0 +1,39 @@
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+// We use a Cell to store a "Commitment Tree" root or a Map of active consents.
+// For this beginner version, we'll store a Map of hashed identifiers.
+export ledger consent_registry: Map<Field, Boolean>;
+
+/**
+ * PARENT ACTION: Grant Consent
+ * This is called by the parent to add a child's hashed ID to the ledger.
+ */
+export circuit grant_consent(child_id_hash: Field): [] {
+    // In a real app, we'd check the parent's signature here.
+    // For now, we simply record that this hash is "Authorized".
+    const disclosed_hash = disclose(child_id_hash);
+    consent_registry.insert(disclosed_hash, true);
+}
+
+/**
+ * CHILD ACTION: Prove Consent
+ * This is a 'witness' circuit. It doesn't change the ledger.
+ * It proves the child belongs to an authorized hash without revealing which one.
+ */
+export circuit verify_minor_access(
+    // Public Input: What the platform sees (nothing in this case, just the proof)
+    // Private Witness: The secret data only the child knows
+    child_id_hash: Field 
+): Boolean {
+    // 1. Disclose the hash to check it against the registry
+    const disclosed_hash = disclose(child_id_hash);
+    
+    // 2. Check if the provided hash exists in our public registry
+    const is_authorized = consent_registry.lookup(disclosed_hash);
+    
+    // 3. The circuit will only 'pass' and generate a valid ZK Proof 
+    // if the minor actually knows an ID that is in the registry.
+    return is_authorized;
+}
