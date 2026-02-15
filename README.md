@@ -8,6 +8,23 @@
 
 ---
 
+## 📸 Screenshots
+
+<div align="center">
+
+### Parent Dashboard - Identity Control Center
+![Parent Dashboard](assets/screenshot-02.png)
+
+### Child Access - Restricted Authentication
+![Child Access](assets/screenshot-01.png)
+
+### Wallet Integration - DApp Authorization
+![Wallet Integration](assets/screenshot-03.png)
+
+</div>
+
+---
+
 ## 📖 Table of Contents
 
 - [What is ZK Parental Consent Gateway?](#-what-is-zk-parental-consent-gateway)
