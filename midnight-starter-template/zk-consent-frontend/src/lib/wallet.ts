@@ -35,6 +35,41 @@ class WalletService {
   }
 
   /**
+   * Wait for window.midnight to be injected by Lace extension
+   */
+  private async waitForMidnight(maxWaitMs: number = 5000): Promise<void> {
+    const startTime = Date.now();
+    let attempts = 0;
+
+    console.log('🔵 [Wallet] Checking for window.midnight...');
+    console.log('🔵 [Wallet] window.midnight exists?', !!window.midnight);
+    console.log('🔵 [Wallet] typeof window.midnight:', typeof window.midnight);
+
+    while (!window.midnight || Object.keys(window.midnight).length === 0) {
+      attempts++;
+      const elapsed = Date.now() - startTime;
+
+      if (elapsed > maxWaitMs) {
+        console.error('🔴 [Wallet] Timeout after', attempts, 'attempts');
+        console.error('🔴 [Wallet] window.midnight:', window.midnight);
+        throw new Error(
+          'Midnight Lace wallet not detected. Please install the Lace extension and refresh the page.'
+        );
+      }
+
+      if (attempts % 10 === 0) {
+        console.log(`🟡 [Wallet] Still waiting... attempt ${attempts}, elapsed ${elapsed}ms`);
+      }
+
+      // Wait 100ms before checking again
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    console.log('🟢 [Wallet] Lace wallet extension detected!');
+    console.log('🟢 [Wallet] Available wallets:', Object.keys(window.midnight));
+  }
+
+  /**
    * Detect available Midnight wallets from window.midnight
    */
   getAvailableWallets(): InitialAPI[] {
@@ -47,21 +82,24 @@ class WalletService {
    */
   async connect(): Promise<WalletState> {
     try {
-      // Check if Lace extension is installed
-      if (!window.midnight || Object.keys(window.midnight).length === 0) {
-        throw new Error(
-          'Midnight Lace wallet not detected. Please install the Lace extension and refresh the page.'
-        );
-      }
+      console.log('🔵 [Wallet] Starting connection process...');
+
+      // Wait for window.midnight to be injected (Lace may inject it lazily)
+      console.log('🔵 [Wallet] Waiting for Lace wallet extension...');
+      await this.waitForMidnight();
 
       // Get the first available wallet
       const walletKeys = Object.keys(window.midnight);
-      const initialAPI: InitialAPI = window.midnight[walletKeys[0]];
+      console.log('🔵 [Wallet] Available wallets:', walletKeys);
 
-      console.log(`Connecting to wallet: ${initialAPI.name} (API v${initialAPI.apiVersion})`);
+      const initialAPI: InitialAPI = window.midnight[walletKeys[0]];
+      console.log(`🔵 [Wallet] Connecting to wallet: ${initialAPI.name} (API v${initialAPI.apiVersion})`);
 
       // Connect to the undeployed local network
+      console.log(`🔵 [Wallet] Calling initialAPI.connect('${MIDNIGHT_CONFIG.networkId}')...`);
       const connectedAPI = await initialAPI.connect(MIDNIGHT_CONFIG.networkId);
+      console.log('🟢 [Wallet] Connection successful!');
+
       this._connectedAPI = connectedAPI;
 
 

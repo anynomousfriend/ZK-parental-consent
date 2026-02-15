@@ -1,222 +1,113 @@
-import { useState } from 'react';
+
+import React, { useState } from 'react';
 import { useWallet } from '../hooks/useWallet';
-import { hashIdentifier, formatHash, isValidIdentifier } from '../lib/hash';
-import { contractService } from '../lib/contract';
+import { hashIdentifier } from '../lib/hash';
+// Import TikTok Feed Logic
 import { TikTokFeed } from './TikTokFeed';
 
-export function ChildApp() {
-  const { isConnected, address, walletName, connect, disconnect, isConnecting, error: walletError } = useWallet();
-  const [childIdentifier, setChildIdentifier] = useState('');
+export const ChildApp: React.FC = () => {
+  const { isConnected, connect } = useWallet();
+  const [identifier, setIdentifier] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [accessGranted, setAccessGranted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleVerifyConsent = async () => {
-    setErrorMessage('');
-
-    if (!isValidIdentifier(childIdentifier)) {
-      setErrorMessage('Invalid identifier. Must be at least 3 characters (letters, numbers, @, ., -, _)');
-      return;
-    }
-
+  const handleVerify = async () => {
+    if (!identifier) return;
     setIsVerifying(true);
+    setError(null);
 
     try {
-      // Generate hash from identifier (same SHA-256 hash as parent side)
-      const hash = await hashIdentifier(childIdentifier);
-      console.log('Verifying hash:', formatHash(hash));
+      // 1. Hash Identity
+      const hash = await hashIdentifier(identifier);
+      const hexHash = hash.toString(16).padStart(64, '0'); // Ensure padding for API
 
-      // Query the indexer to check if hash exists in the on-chain consent_registry
-      const result = await contractService.verifyConsent(hash);
+      // 2. Call Proof Verification API (No Wallet Needed for Reading Public State)
+      // We use the backend API to query the indexer without gas fees
+      const response = await fetch(`/api/consent/verify/${hexHash}`);
+      const result = await response.json();
 
-      if (result.error) {
-        throw new Error(result.error);
+      if (result.error) throw new Error(result.error);
+
+      if (result.isAuthorized) {
+        setAccessGranted(true);
+      } else {
+        throw new Error('ACCESS_DENIED: No consent record found on ledger.');
       }
-
-      if (!result.isAuthorized) {
-        setErrorMessage(
-          'No parental consent found for this identifier.\n\n' +
-          'Please ask your parent to grant consent first using the Parent Dashboard.'
-        );
-        return;
-      }
-
-      // Consent verified! Grant access to the interface
-      setIsAuthorized(true);
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to verify consent');
+    } catch (err: any) {
+      setError(err.message || 'Verification Failed');
+      setAccessGranted(false);
     } finally {
       setIsVerifying(false);
     }
   };
 
-  const handleLogout = () => {
-    setIsAuthorized(false);
-    setChildIdentifier('');
-    setErrorMessage('');
-  };
-
-  // If authorized, show TikTok feed
-  if (isAuthorized) {
-    return <TikTokFeed onLogout={handleLogout} />;
+  if (accessGranted) {
+    return (
+      <div className="animate-fade-in">
+        <div className="flex justify-between items-center mb-6 glass-panel p-4 rounded-lg border-b border-green-500/30">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+            <span className="text-green-400 font-mono text-sm tracking-wider">ACCESS_LEVEL: UNRESTRICTED</span>
+          </div>
+          <button
+            onClick={() => setAccessGranted(false)}
+            className="text-gray-500 hover:text-white text-xs font-mono"
+          >
+            [LOCK_SESSION]
+          </button>
+        </div>
+        <TikTokFeed />
+      </div>
+    );
   }
 
   return (
-    <div className="glass-card rounded-3xl p-8 max-w-2xl mx-auto backdrop-blur-xl bg-white/70 border border-white/20 shadow-xl transition-all hover:shadow-2xl">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pastel-yellow to-pastel-gold flex items-center justify-center shadow-lg shadow-yellow-500/20">
-          <svg className="w-6 h-6 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
+    <div className="max-w-md mx-auto mt-12">
+      <div className="glass-panel p-8 rounded-2xl border border-[rgba(255,255,255,0.05)] shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+        <div className="text-center mb-8">
+          <div className="inline-block p-4 rounded-full bg-[rgba(6,182,212,0.1)] mb-4 border border-[var(--color-neon-cyan)]">
+            <svg className="w-8 h-8 text-[var(--color-neon-cyan)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.131A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold font-display text-white mb-2">Restricted Access</h2>
+          <p className="text-gray-400 text-sm font-mono">Authentication Required via ZK Proof</p>
         </div>
-        <div className="text-left">
-          <h3 className="font-display font-bold text-2xl text-gray-800">Child Verification</h3>
-          <p className="text-sm text-gray-500 font-medium">Verify parental consent</p>
-        </div>
-      </div>
 
-      {/* Wallet Connection */}
-      {!isConnected ? (
-        <div className="mb-6">
+        <div className="space-y-4">
+          <input
+            type="text"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            placeholder="Identity Hash / Username"
+            className="w-full bg-black/50 border border-gray-700 rounded-lg p-4 text-center text-white focus:border-[var(--color-neon-cyan)] focus:outline-none transition-colors font-mono tracking-widest"
+          />
+
+          {error && (
+            <div className="p-3 bg-red-900/20 border border-red-500/30 rounded text-red-400 text-xs font-mono text-center">
+              ⚠️ {error}
+            </div>
+          )}
+
           <button
-            onClick={connect}
-            disabled={isConnecting}
-            className="wallet-btn w-full bg-gradient-to-r from-pastel-yellow to-pastel-gold hover:from-yellow-200 hover:to-yellow-300 text-amber-900 font-display font-bold py-4 px-6 rounded-2xl transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+            onClick={handleVerify}
+            disabled={isVerifying || !identifier}
+            className={`w-full py-4 rounded-lg font-bold tracking-widest uppercase transition-all duration-300 ${isVerifying
+                ? 'bg-gray-800 text-gray-500 cursor-wait'
+                : 'bg-white text-black hover:bg-[var(--color-neon-cyan)] hover:text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]'
+              }`}
           >
-            <span className="flex items-center justify-center gap-3">
-              {isConnecting ? (
-                <>
-                  <div className="loader w-5 h-5 border-2 border-amber-800/30 border-t-amber-800 rounded-full animate-spin"></div>
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                  </svg>
-                  Connect Wallet
-                </>
-              )}
-            </span>
+            {isVerifying ? 'VERIFYING CREDENTIALS...' : 'AUTHENTICATE'}
           </button>
+        </div>
 
-          <p className="mt-3 text-xs text-center text-gray-500">
-            Connect your own Lace wallet (different from parent's). Use "Undeployed" network.
+        {!isConnected && (
+          <p className="mt-6 text-center text-xs text-gray-600 font-mono">
+            Note: Verification relies on public ledger state.<br />Wallet connection optional for viewing.
           </p>
-
-          {walletError && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 text-center">
-              {walletError}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="mb-8 p-4 bg-yellow-50/50 rounded-2xl border border-yellow-100">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-sky-400 flex items-center justify-center shadow-sm">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-800">Wallet Connected</p>
-                <p className="font-mono text-xs text-gray-500 truncate max-w-[150px]">
-                  {address ? `${address.substring(0, 10)}...${address.substring(address.length - 4)}` : 'Loading...'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                Active
-              </span>
-              <button
-                onClick={disconnect}
-                className="text-xs font-medium text-red-500 hover:text-red-700 hover:underline transition-colors"
-              >
-                Disconnect
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Login Form */}
-      {isConnected && (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700 ml-1">
-              Your Identifier
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={childIdentifier}
-                onChange={(e) => setChildIdentifier(e.target.value)}
-                placeholder="Enter the identifier your parent gave you"
-                className="w-full px-5 py-3 bg-gray-50/50 border-2 border-gray-100 rounded-xl font-medium text-gray-800 focus:ring-4 focus:ring-sky-100 focus:border-sky-400 focus:outline-none transition-all placeholder:text-gray-400"
-                disabled={isVerifying}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && childIdentifier.trim()) {
-                    handleVerifyConsent();
-                  }
-                }}
-              />
-            </div>
-            <p className="text-xs text-gray-500 ml-1">
-              This will be hashed and verified against the blockchain.
-            </p>
-          </div>
-
-          <button
-            onClick={handleVerifyConsent}
-            disabled={!childIdentifier.trim() || isVerifying}
-            className="w-full bg-gradient-to-r from-sky-500 to-sky-400 hover:from-sky-600 hover:to-sky-500 text-white font-display font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl disabled:opacity-70 transform hover:-translate-y-0.5 active:translate-y-0"
-          >
-            <span className="flex items-center justify-center gap-2">
-              {isVerifying ? (
-                <>
-                  <div className="loader w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  Checking on-chain registry...
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Verify Consent & Login
-                </>
-              )}
-            </span>
-          </button>
-
-          {/* Error Message */}
-          {errorMessage && (
-            <div className="mt-4 p-4 bg-red-50/80 backdrop-blur-sm rounded-xl border border-red-200 animate-fade-in shadow-sm">
-              <div className="flex gap-3">
-                <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-sm text-red-800 font-medium whitespace-pre-line">{errorMessage}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Privacy Note */}
-          <div className="mt-8 p-4 bg-blue-50/50 rounded-xl border border-blue-100/50">
-            <div className="flex gap-2">
-              <svg className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-xs text-blue-800 leading-relaxed">
-                <strong>Privacy Note:</strong> Your actual identifier is never stored on the blockchain. Only a cryptographic hash is used for verification.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
-}
+};

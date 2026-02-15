@@ -22,16 +22,20 @@ export function useWallet() {
 
   // Connect wallet via Lace DApp Connector
   const connect = useCallback(async () => {
+    console.log('🟡 [useWallet] Connect button clicked!');
     setIsConnecting(true);
     setError(null);
     try {
+      console.log('🟡 [useWallet] Calling walletService.connect()...');
       await walletService.connect();
+      console.log('🟢 [useWallet] walletService.connect() completed successfully!');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to connect wallet';
       setError(errorMessage);
-      console.error('Wallet connection error:', err);
+      console.error('🔴 [useWallet] Wallet connection error:', err);
     } finally {
       setIsConnecting(false);
+      console.log('🟡 [useWallet] Connection process finished');
     }
   }, []);
 

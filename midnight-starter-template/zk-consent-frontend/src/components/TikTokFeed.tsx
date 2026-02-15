@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 
 interface TikTokFeedProps {
-  onLogout: () => void;
+  onLogout?: () => void;
 }
 
 interface CatGif {
@@ -76,12 +76,14 @@ export function TikTokFeed({ onLogout }: TikTokFeedProps) {
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/50 to-transparent p-4 flex justify-between items-center">
         <h1 className="text-white text-xl font-bold drop-shadow-md">🐱 Cat Zone (API)</h1>
-        <button
-          onClick={onLogout}
-          className="bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm transition backdrop-blur-sm"
-        >
-          Logout
-        </button>
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm transition backdrop-blur-sm"
+          >
+            Logout
+          </button>
+        )}
       </div>
 
       {/* Scroll Container */}
