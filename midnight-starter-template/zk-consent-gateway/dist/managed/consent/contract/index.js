@@ -74,6 +74,32 @@ export class Contract {
                 partialProofData.output = { value: [], alignment: [] };
                 return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
             },
+            revoke_consent: (...args_1) => {
+                if (args_1.length !== 2) {
+                    throw new __compactRuntime.CompactError(`revoke_consent: expected 2 arguments (as invoked from Typescript), received ${args_1.length}`);
+                }
+                const contextOrig_0 = args_1[0];
+                const child_id_hash_0 = args_1[1];
+                if (!(typeof (contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
+                    __compactRuntime.typeError('revoke_consent', 'argument 1 (as invoked from Typescript)', 'consent.compact line 24 char 1', 'CircuitContext', contextOrig_0);
+                }
+                if (!(typeof (child_id_hash_0) === 'bigint' && child_id_hash_0 >= 0 && child_id_hash_0 <= __compactRuntime.MAX_FIELD)) {
+                    __compactRuntime.typeError('revoke_consent', 'argument 1 (argument 2 as invoked from Typescript)', 'consent.compact line 24 char 1', 'Field', child_id_hash_0);
+                }
+                const context = { ...contextOrig_0, gasCost: __compactRuntime.emptyRunningCost() };
+                const partialProofData = {
+                    input: {
+                        value: _descriptor_0.toValue(child_id_hash_0),
+                        alignment: _descriptor_0.alignment()
+                    },
+                    output: undefined,
+                    publicTranscript: [],
+                    privateTranscriptOutputs: []
+                };
+                const result_0 = this._revoke_consent_0(context, partialProofData, child_id_hash_0);
+                partialProofData.output = { value: [], alignment: [] };
+                return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
+            },
             verify_minor_access: (...args_1) => {
                 if (args_1.length !== 2) {
                     throw new __compactRuntime.CompactError(`verify_minor_access: expected 2 arguments (as invoked from Typescript), received ${args_1.length}`);
@@ -81,10 +107,10 @@ export class Contract {
                 const contextOrig_0 = args_1[0];
                 const child_id_hash_0 = args_1[1];
                 if (!(typeof (contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
-                    __compactRuntime.typeError('verify_minor_access', 'argument 1 (as invoked from Typescript)', 'consent.compact line 25 char 1', 'CircuitContext', contextOrig_0);
+                    __compactRuntime.typeError('verify_minor_access', 'argument 1 (as invoked from Typescript)', 'consent.compact line 36 char 1', 'CircuitContext', contextOrig_0);
                 }
                 if (!(typeof (child_id_hash_0) === 'bigint' && child_id_hash_0 >= 0 && child_id_hash_0 <= __compactRuntime.MAX_FIELD)) {
-                    __compactRuntime.typeError('verify_minor_access', 'argument 1 (argument 2 as invoked from Typescript)', 'consent.compact line 25 char 1', 'Field', child_id_hash_0);
+                    __compactRuntime.typeError('verify_minor_access', 'argument 1 (argument 2 as invoked from Typescript)', 'consent.compact line 36 char 1', 'Field', child_id_hash_0);
                 }
                 const context = { ...contextOrig_0, gasCost: __compactRuntime.emptyRunningCost() };
                 const partialProofData = {
@@ -103,6 +129,7 @@ export class Contract {
         };
         this.impureCircuits = {
             grant_consent: this.circuits.grant_consent,
+            revoke_consent: this.circuits.revoke_consent,
             verify_minor_access: this.circuits.verify_minor_access
         };
     }
@@ -125,6 +152,7 @@ export class Contract {
         stateValue_0 = stateValue_0.arrayPush(__compactRuntime.StateValue.newNull());
         state_0.data = new __compactRuntime.ChargedState(stateValue_0);
         state_0.setOperation('grant_consent', new __compactRuntime.ContractOperation());
+        state_0.setOperation('revoke_consent', new __compactRuntime.ContractOperation());
         state_0.setOperation('verify_minor_access', new __compactRuntime.ContractOperation());
         const context = __compactRuntime.createCircuitContext(__compactRuntime.dummyContractAddress(), constructorContext_0.initialZswapLocalState.coinPublicKey, state_0.data, constructorContext_0.initialPrivateState);
         const partialProofData = {
@@ -165,6 +193,24 @@ export class Contract {
                     value: __compactRuntime.StateValue.newCell({ value: _descriptor_1.toValue(true),
                         alignment: _descriptor_1.alignment() }).encode() } },
             { ins: { cached: false, n: 1 } },
+            { ins: { cached: true, n: 1 } }
+        ]);
+        return [];
+    }
+    _revoke_consent_0(context, partialProofData, child_id_hash_0) {
+        const disclosed_hash_0 = child_id_hash_0;
+        __compactRuntime.queryLedgerState(context, partialProofData, [
+            { idx: { cached: false,
+                    pushPath: true,
+                    path: [
+                        { tag: 'value',
+                            value: { value: _descriptor_7.toValue(0n),
+                                alignment: _descriptor_7.alignment() } }
+                    ] } },
+            { push: { storage: false,
+                    value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(disclosed_hash_0),
+                        alignment: _descriptor_0.alignment() }).encode() } },
+            { rem: { cached: false } },
             { ins: { cached: true, n: 1 } }
         ]);
         return [];

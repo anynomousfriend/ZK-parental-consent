@@ -4,11 +4,9 @@
   "type": "module",
   "scripts": {
     "compile": "compact compile src/counter.compact src/managed/counter",
-    "compile:voting": "compact compile src/voting.compact src/managed/voting",
     "compile:consent": "compact compile src/consent.compact src/managed/consent",
     "build": "tsc",
     "deploy": "node dist/deploy.js",
-    "deploy:voting": "node dist/deploy-voting.js",
     "deploy:consent": "node dist/deploy-consent.js"
   },
   "dependencies": {

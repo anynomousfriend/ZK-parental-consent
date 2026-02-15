@@ -6,6 +6,8 @@ export type Witnesses<PS> = {
 export type ImpureCircuits<PS> = {
   grant_consent(context: __compactRuntime.CircuitContext<PS>,
                 child_id_hash_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  revoke_consent(context: __compactRuntime.CircuitContext<PS>,
+                 child_id_hash_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   verify_minor_access(context: __compactRuntime.CircuitContext<PS>,
                       child_id_hash_0: bigint): __compactRuntime.CircuitResults<PS, boolean>;
 }
@@ -16,6 +18,8 @@ export type PureCircuits = {
 export type Circuits<PS> = {
   grant_consent(context: __compactRuntime.CircuitContext<PS>,
                 child_id_hash_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  revoke_consent(context: __compactRuntime.CircuitContext<PS>,
+                 child_id_hash_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   verify_minor_access(context: __compactRuntime.CircuitContext<PS>,
                       child_id_hash_0: bigint): __compactRuntime.CircuitResults<PS, boolean>;
 }

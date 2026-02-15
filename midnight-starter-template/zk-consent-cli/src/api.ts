@@ -9,9 +9,14 @@ import {
   type CounterPrivateStateId,
   type CounterProviders,
   type DeployedCounterContract,
+  ConsentCircuits,
+  type ConsentPrivateStateId,
+  type ConsentProviders,
+  type DeployedConsentContract,
+  type ConsentPrivateState,
 } from './common-types';
 import { type Config, contractConfig } from './config';
-import { Counter, type CounterPrivateState } from '@eddalabs/zk-consent-gateway';
+import { Counter, Consent, type CounterPrivateState } from '@eddalabs/zk-consent-gateway';
 import { type ContractAddress } from '@midnight-ntwrk/compact-runtime';
 import * as ledger from '@midnight-ntwrk/ledger-v7';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
@@ -59,6 +64,12 @@ export function setLogger(_logger: Logger) {
 const counterCompiledContract = CompiledContract.make('counter', Counter.Contract).pipe(
   CompiledContract.withVacantWitnesses,
   CompiledContract.withCompiledFileAssets(contractConfig.zkConfigPath),
+);
+
+// Pre-compile the consent contract with ZK circuit assets
+const consentCompiledContract = CompiledContract.make('consent', Consent.Contract).pipe(
+  CompiledContract.withVacantWitnesses,
+  CompiledContract.withCompiledFileAssets(contractConfig.consentZkConfigPath),
 );
 
 // Types for the new wallet
@@ -603,4 +614,169 @@ export const closeWallet = async (walletContext: WalletContext): Promise<void> =
   } catch (e) {
     logger.error(`Error closing wallet: ${e}`);
   }
+};
+
+// ============================================================================
+// CONSENT CONTRACT API METHODS
+// ============================================================================
+
+/**
+ * Get the consent registry state from the ledger
+ */
+export const getConsentLedgerState = async (
+  providers: ConsentProviders,
+  contractAddress: ContractAddress,
+): Promise<Map<bigint, boolean> | null> => {
+  assertIsContractAddress(contractAddress);
+  logger.info('Checking consent contract ledger state...');
+  const state = await providers.publicDataProvider
+    .queryContractState(contractAddress)
+    .then((contractState) => {
+      if (contractState == null) return null;
+      const ledgerState = Consent.ledger(contractState.data);
+      const registry = new Map<bigint, boolean>();
+      for (const [key, value] of ledgerState.consent_registry) {
+        registry.set(key, value);
+      }
+      return registry;
+    });
+  logger.info(`Consent registry has ${state?.size ?? 0} entries`);
+  return state;
+};
+
+/**
+ * Join an existing deployed consent contract
+ */
+export const joinConsentContract = async (
+  providers: ConsentProviders,
+  contractAddress: string,
+): Promise<DeployedConsentContract> => {
+  const consentContract = await findDeployedContract(providers, {
+    contractAddress,
+    compiledContract: consentCompiledContract,
+    privateStateId: 'consentPrivateState',
+    initialPrivateState: {},
+  });
+  logger.info(`Joined consent contract at address: ${consentContract.deployTxData.public.contractAddress}`);
+  return consentContract;
+};
+
+/**
+ * Deploy a new consent contract
+ */
+export const deployConsent = async (
+  providers: ConsentProviders,
+  privateState: ConsentPrivateState,
+): Promise<DeployedConsentContract> => {
+  logger.info('Deploying consent contract...');
+  const consentContract = await deployContract(providers, {
+    compiledContract: consentCompiledContract,
+    privateStateId: 'consentPrivateState',
+    initialPrivateState: privateState,
+  });
+  logger.info(`Deployed consent contract at address: ${consentContract.deployTxData.public.contractAddress}`);
+  return consentContract;
+};
+
+/**
+ * Grant consent for a child (parent action)
+ * @param consentContract - The deployed consent contract
+ * @param childIdHash - The hashed identifier of the child
+ */
+export const grantConsent = async (
+  consentContract: DeployedConsentContract,
+  childIdHash: bigint,
+): Promise<FinalizedTxData> => {
+  logger.info(`Granting consent for child ID hash: ${childIdHash.toString(16)}`);
+  const finalizedTxData = await consentContract.callTx.grant_consent(childIdHash);
+  logger.info('Consent granted successfully');
+  return finalizedTxData.public;
+};
+
+/**
+ * Revoke consent for a child (parent action)
+ * @param consentContract - The deployed consent contract
+ * @param childIdHash - The hashed identifier of the child
+ */
+export const revokeConsent = async (
+  consentContract: DeployedConsentContract,
+  childIdHash: bigint,
+): Promise<FinalizedTxData> => {
+  logger.info(`Revoking consent for child ID hash: ${childIdHash.toString(16)}`);
+  const finalizedTxData = await consentContract.callTx.revoke_consent(childIdHash);
+  logger.info('Consent revoked successfully');
+  return finalizedTxData.public;
+};
+
+/**
+ * Verify if a child has parental consent (child action)
+ * @param consentContract - The deployed consent contract
+ * @param childIdHash - The hashed identifier of the child
+ * @returns Boolean indicating if consent exists (via ZK proof)
+ */
+export const verifyMinorAccess = async (
+  consentContract: DeployedConsentContract,
+  childIdHash: bigint,
+): Promise<{ hasConsent: boolean; txData: FinalizedTxData }> => {
+  logger.info(`Verifying consent for child ID hash: ${childIdHash.toString(16)}`);
+  const finalizedTxData = await consentContract.callTx.verify_minor_access(childIdHash);
+  const hasConsent = finalizedTxData.public.callResult as boolean;
+  logger.info(`Consent verification result: ${hasConsent ? 'AUTHORIZED' : 'NOT AUTHORIZED'}`);
+  return { hasConsent, txData: finalizedTxData.public };
+};
+
+/**
+ * Check if a specific child ID hash has consent in the registry
+ */
+export const checkConsentStatus = async (
+  providers: ConsentProviders,
+  contractAddress: ContractAddress,
+  childIdHash: bigint,
+): Promise<boolean> => {
+  const registry = await getConsentLedgerState(providers, contractAddress);
+  if (!registry) {
+    logger.info('No consent registry found');
+    return false;
+  }
+  const hasConsent = registry.get(childIdHash) ?? false;
+  logger.info(`Child ID hash ${childIdHash.toString(16)} consent status: ${hasConsent}`);
+  return hasConsent;
+};
+
+/**
+ * Configure providers for consent contract operations
+ */
+export const configureConsentProviders = async (walletContext: WalletContext, config: Config) => {
+  const walletAndMidnightProvider = await createWalletAndMidnightProvider(walletContext);
+  const zkConfigProvider = new NodeZkConfigProvider<ConsentCircuits>(contractConfig.consentZkConfigPath);
+  return {
+    privateStateProvider: levelPrivateStateProvider<typeof ConsentPrivateStateId>({
+      privateStateStoreName: contractConfig.consentPrivateStateStoreName,
+      signingKeyStoreName: 'consent-signing-keys',
+      midnightDbName: 'midnight-level-db',
+      walletProvider: walletAndMidnightProvider,
+    }),
+    publicDataProvider: indexerPublicDataProvider(config.indexer, config.indexerWS),
+    zkConfigProvider,
+    proofProvider: httpClientProofProvider(config.proofServer, zkConfigProvider),
+    walletProvider: walletAndMidnightProvider,
+    midnightProvider: walletAndMidnightProvider,
+  };
+};
+
+/**
+ * Display consent contract information
+ */
+export const displayConsentContract = async (
+  providers: ConsentProviders,
+  consentContract: DeployedConsentContract,
+): Promise<{ contractAddress: string; registrySize: number }> => {
+  const contractAddress = consentContract.deployTxData.public.contractAddress;
+  const registry = await getConsentLedgerState(providers, contractAddress);
+  const registrySize = registry?.size ?? 0;
+  
+  logger.info(`Consent Contract Address: ${contractAddress}`);
+  logger.info(`Total consents granted: ${registrySize}`);
+  
+  return { contractAddress, registrySize };
 };

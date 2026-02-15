@@ -22,6 +22,24 @@
       }
     },
     {
+      "name": "revoke_consent",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "child_id_hash",
+          "type": {
+            "type-name": "Field"
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
       "name": "verify_minor_access",
       "pure": false,
       "proof": true,

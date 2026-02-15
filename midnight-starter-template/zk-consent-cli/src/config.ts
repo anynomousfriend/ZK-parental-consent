@@ -5,6 +5,8 @@ export const currentDir = path.resolve(new URL(import.meta.url).pathname, '..');
 export const contractConfig = {
   privateStateStoreName: 'counter-private-state',
   zkConfigPath: path.resolve(currentDir, '..', '..', 'counter-contract', 'src', 'managed', 'counter'),
+  consentPrivateStateStoreName: 'consent-private-state',
+  consentZkConfigPath: path.resolve(currentDir, '..', '..', 'zk-consent-gateway', 'src', 'managed', 'consent'),
 };
 
 export interface Config {
