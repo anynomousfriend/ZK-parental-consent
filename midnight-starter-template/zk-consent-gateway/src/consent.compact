@@ -2,19 +2,36 @@ pragma language_version >= 0.20;
 
 import CompactStandardLibrary;
 
-// We use a Cell to store a "Commitment Tree" root or a Map of active consents.
-// For this beginner version, we'll store a Map of hashed identifiers.
+// Store mapping of child hash to a boolean (consent granted or not)
+// In Compact, we cannot access transaction sender in circuits
+// So we simplify to just track if consent exists
 export ledger consent_registry: Map<Field, Boolean>;
 
 /**
  * PARENT ACTION: Grant Consent
  * This is called by the parent to add a child's hashed ID to the ledger.
+ * Note: Compact circuits cannot access transaction sender directly.
+ * Authentication is handled at the wallet/transaction level.
  */
 export circuit grant_consent(child_id_hash: Field): [] {
-    // In a real app, we'd check the parent's signature here.
-    // For now, we simply record that this hash is "Authorized".
+    // Disclose the child ID hash
     const disclosed_hash = disclose(child_id_hash);
+    
+    // Store the consent in the registry
     consent_registry.insert(disclosed_hash, true);
+}
+
+/**
+ * PARENT ACTION: Revoke Consent
+ * This allows removal of consent for a child.
+ * Note: In production, you'd want to track who granted consent
+ * using off-chain authentication or a different mechanism.
+ */
+export circuit revoke_consent(child_id_hash: Field): [] {
+    const disclosed_hash = disclose(child_id_hash);
+    
+    // Remove the consent from the registry
+    consent_registry.remove(disclosed_hash);
 }
 
 /**

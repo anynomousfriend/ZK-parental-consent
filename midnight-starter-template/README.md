@@ -1,126 +1,104 @@
-# Midnight Starter Template
+# Midnight ZK Consent Gateway
 
-- A starter template for building on Midnight Network with React frontend and smart contract integration.
-- **[Live Demo → counter.nebula.builders](https://counter.nebula.builders)**
+A privacy-preserving parental consent application built on the Midnight Network. This full-stack DApp demonstrates:
+- **Zero-Knowledge Proofs**: Proving consent without revealing the child's identity.
+- **DApp Connector API v4**: Connecting to Lace wallet for on-chain interactions.
+- **Hybrid Architecture**: Browser-based verification combined with a local backend for heavy proof generation.
 
 ## 📦 Prerequisites
 
-- [Node.js](https://nodejs.org/) (v23+) & [npm](https://www.npmjs.com/) (v11+)
-- [Docker](https://docs.docker.com/get-docker/)
-- [Git LFS](https://git-lfs.com/) (for large files)
-- [Compact](https://docs.midnight.network/relnotes/compact-tools) (Midnight developer tools)
-- [Lace](https://chromewebstore.google.com/detail/hgeekaiplokcnmakghbdfbgnlfheichg?utm_source=item-share-cb) (Browser wallet extension)
-- [Faucet](https://faucet.preview.midnight.network/) (Preview Network Faucet)
+- **Node.js** (v18+)
+- **Docker** (Desktop or Engine, running)
+- **Lace Wallet** (Browser Extension)
+  - Network set to: **Undeployed**
+  - Developer Mode enabled
 
-## Known Issues
+## 🚀 Quick Start (End-to-End)
 
-- There’s a not-yet-fixed bug in the arm64 Docker image of the proof server.
-- Workaround: Use Bricktower proof server. **bricktowers/proof-server:6.1.0-alpha.6**
+Follow these steps to run the full stack locally.
 
-## 🛠️ Setup
+### 1️⃣ Start Midnight Network (Docker)
 
-### 1️⃣ Install Git LFS
+Start the local blockchain nodes, indexer, and proof server.
 
 ```bash
-# Install and initialize Git LFS
-sudo dnf install git-lfs  # For Fedora/RHEL
-git lfs install
+cd midnight-local-network
+docker compose up -d
 ```
-
-### 2️⃣ Install Compact Tools
-
-```bash
-# Install the latest Compact tools
-curl --proto '=https' --tlsv1.2 -LsSf \
-  https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
-```
-
-```bash
-# Install the latest compiler
-# Compact compiler version 0.27 should be downloaded manually. Compact tools does not support it currently.
-compact update +0.27.0
-```
-
-### 3️⃣ Install Node.js and docker
-
-- [Node.js](https://nodejs.org/) & [npm](https://www.npmjs.com/)
-- [Docker](https://docs.docker.com/get-docker/)
-
-### 4️⃣ Verify Installation
-
-```bash
-# Check versions
-node -v
-npm -v
-docker -v
-git lfs version
-compact check  # Should show latest version
-```
-
-## 📁 Project Structure
-
-```
-├── zk-consent-cli/         # CLI tools
-├── zk-consent-gateway/    # Smart contracts
-└── frontend-vite-react/ # React application
-```
-
-## 📋 Deployed Contracts
-
-### ZK Consent Gateway Contract
-
-A zero-knowledge consent management system that allows parents to grant consent for minors while preserving privacy.
-
-**Deployment Details:**
-- **Contract Address:** `3ff5dde935e606939c45813cf7f4e95c1b6584a5c3bfd90af2c1e3f653a88121`
-- **Network:** `undeployed` (local development)
-- **Deployed At:** `2026-02-14T09:54:31.560Z`
-- **Deployment File:** [`zk-consent-gateway/deployment-consent.json`](./zk-consent-gateway/deployment-consent.json)
-
-**Features:**
-- Parent can grant consent by adding child's hashed ID to the ledger
-- Child can prove consent without revealing their identity
-- Zero-knowledge proof system ensures privacy
-
-**Circuits:**
-- `grant_consent`: Records a child's hashed ID as authorized
-- `verify_minor_access`: Proves a child has authorization without revealing which ID
-
-## 🔗 Setup Instructions
-
-### Install Project Dependencies and compile contracts
-
-```bash
- # In one terminal (from project root)
- npm install
- npm run build
-```
-
-### Setup Env variables
-
-1. **Create .env file from template under zk-consent-cli folder**
-   - [`zk-consent-cli/.env_template`](./zk-consent-cli/.env_template)
-
-2. **Create .env file from template under frontend-vite-react folder**
-   - [`frontend-vite-react/.env_template`](./frontend-vite-react/.env_template)
-
-### Start Development In Preview Network or
-
-```bash
-# In one terminal (from project root)
-npm run dev:frontend
-```
-
-### Start Development In Undeployed Network
-
-```bash
-# In one terminal (from project root)
-npm run setup-standalone
-
-# In another terminal (from project root)
-npm run dev:frontend
-```
+> Verify that `node`, `indexer`, and `proof-server` containers are running (`docker ps`).
 
 ---
 
-<div align="center"><p>Built with ❤️ by <a href="https://eddalabs.io">Edda Labs</a></p></div>
+### 2️⃣ Setup Backend & Deploy Contract
+
+The `zk-consent-gateway` serves two purposes:
+1.  Deploys the smart contract.
+2.  Runs a backend API bridge to handle ZK proof generation for the frontend.
+
+**Open Terminal A:**
+
+```bash
+cd midnight-starter-template/zk-consent-gateway
+
+# 1. Install dependencies
+npm install
+
+# 2. Compile the contract
+npm run compile:consent
+
+# 3. Deploy the contract (run once)
+# Follow the prompts. You can generate a new seed or use an existing one.
+npm run deploy:consent
+
+# 4. Start the Backend Server (Keep this running!)
+npm run start:server
+```
+> The server will listen on port `3001` and handle "Grant Consent" requests from the frontend.
+
+---
+
+### 3️⃣ Setup Frontend
+
+The React application where parents grant consent and children verify it.
+
+**Open Terminal B:**
+
+```bash
+cd midnight-starter-template/zk-consent-frontend
+
+# 1. Install dependencies
+npm install
+
+# 2. Start the development server
+npm run dev
+```
+> The app will open at [http://localhost:5173](http://localhost:5173).
+
+---
+
+## 🎮 Usage Guide
+
+### Parent Flow (Granting Consent)
+1.  Open [http://localhost:5173](http://localhost:5173) and switch to **Parent Mode**.
+2.  Click **"Connect Lace Wallet"** (ensure Lace is on "Undeployed" network).
+3.  Enter a child identifier (e.g., `simba@lionking.com`).
+4.  Click **"Generate Secure Hash"**.
+5.  Click **"Confirm & Grant Consent"**.
+    - This sends the request to your local backend (`Terminal A`), which generates the ZK proof and submits the transaction.
+    - Wait for the "Consent granted successfully!" message.
+
+### Child Flow (Verifying Access)
+1.  Switch the toggle to **Child Mode**.
+2.  Click **"Connect Wallet"** (you can use the same wallet or a different one).
+3.  Enter the **same identifier** (`simba@lionking.com`).
+4.  Click **"Verify Consent & Login"**.
+    - The app queries the Midnight Indexer to check if the hash exists on-chain.
+    - **Success!** You will see the "Access Granted" screen with the TikTok feed.
+
+---
+
+## 🛠️ Troubleshooting
+
+- **"Wallet not found"**: Ensure the Lace extension is installed and you are connected to the "Undeployed" network.
+- **Backend Error**: Check `Terminal A` for logs. Ensure `deploy-consent.json` exists (created after deployment).
+- **Docker Connection Refused**: Ensure Docker containers are healthy. The indexer must be reachable at `http://localhost:8088`.

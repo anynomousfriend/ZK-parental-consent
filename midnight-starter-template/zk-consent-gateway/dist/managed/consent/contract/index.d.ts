@@ -25,6 +25,20 @@ export class Contract {
             };
             gasCost: any;
         };
+        revoke_consent: (...args_1: any[]) => {
+            result: any[];
+            context: any;
+            proofData: {
+                input: {
+                    value: __compactRuntime.Value;
+                    alignment: __compactRuntime.Alignment;
+                };
+                output: undefined;
+                publicTranscript: never[];
+                privateTranscriptOutputs: never[];
+            };
+            gasCost: any;
+        };
         verify_minor_access: (...args_1: any[]) => {
             result: boolean;
             context: any;
@@ -42,6 +56,20 @@ export class Contract {
     };
     impureCircuits: {
         grant_consent: (...args_1: any[]) => {
+            result: any[];
+            context: any;
+            proofData: {
+                input: {
+                    value: __compactRuntime.Value;
+                    alignment: __compactRuntime.Alignment;
+                };
+                output: undefined;
+                publicTranscript: never[];
+                privateTranscriptOutputs: never[];
+            };
+            gasCost: any;
+        };
+        revoke_consent: (...args_1: any[]) => {
             result: any[];
             context: any;
             proofData: {
@@ -76,6 +104,7 @@ export class Contract {
         currentZswapLocalState: __compactRuntime.EncodedZswapLocalState;
     };
     _grant_consent_0(context: any, partialProofData: any, child_id_hash_0: any): never[];
+    _revoke_consent_0(context: any, partialProofData: any, child_id_hash_0: any): never[];
     _verify_minor_access_0(context: any, partialProofData: any, child_id_hash_0: any): boolean;
 }
 export const pureCircuits: {};

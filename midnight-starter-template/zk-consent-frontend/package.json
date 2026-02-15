@@ -1,0 +1,42 @@
+{
+  "name": "zk-consent-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "^0.14.0",
+    "@midnight-ntwrk/dapp-connector-api": "^4.0.0",
+    "@midnight-ntwrk/ledger-v7": "^7.0.1",
+    "@midnight-ntwrk/midnight-js-contracts": "^3.1.0",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "^3.1.0",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "^3.1.0",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "^3.1.0",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "^3.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "autoprefixer": "^10.4.24",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vite": "^7.3.1"
+  }
+}
