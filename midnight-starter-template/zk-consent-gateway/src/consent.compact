@@ -18,6 +18,17 @@ export circuit grant_consent(child_id_hash: Field): [] {
 }
 
 /**
+ * PARENT ACTION: Revoke Consent
+ * This is called by the parent to remove a child's hashed ID from the ledger.
+ */
+export circuit revoke_consent(child_id_hash: Field): [] {
+    // In a real app, we'd check the parent's signature here.
+    // For now, we simply remove the hash from the registry.
+    const disclosed_hash = disclose(child_id_hash);
+    consent_registry.remove(disclosed_hash);
+}
+
+/**
  * CHILD ACTION: Prove Consent
  * This is a 'witness' circuit. It doesn't change the ledger.
  * It proves the child belongs to an authorized hash without revealing which one.
